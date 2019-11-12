@@ -49,7 +49,7 @@ func TestEncryptDecrypt(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			encrypted, err := NewEncrypter().Encrypt(tc.recipientPublicKey, tc.data)
+			encrypted, err := NewEncrypter(tc.recipientPublicKey).Encrypt(tc.recipientPublicKey, tc.data)
 			assert.Equal(tc.err, err)
 			assert.NotNil(encrypted)
 			decrypter := Decrypter{tc.recipientPrivateKey}
@@ -57,6 +57,54 @@ func TestEncryptDecrypt(t *testing.T) {
 			decrypted, err := decrypter.Decrypt(encrypted)
 			assert.Equal(tc.err, err)
 			assert.Equal(tc.data, []byte(decrypted))
+		})
+	}
+}
+
+func TestEncrypter(t *testing.T) {
+	assert := assert.New(t)
+	cases := []struct {
+		name                string
+		recipientPublicKey  crypto.PublicKey
+		recipientPrivateKey crypto.PrivateKey
+		data                []byte
+		err                 error
+	}{
+		{
+			"to-sofia-short-text",
+			ed25519test.SofiaPublicKey,
+			ed25519test.SofiaPrivateKey,
+			[]byte("Hi Sofia"),
+			nil,
+		},
+		{
+			"to-sofia-medium-text",
+			ed25519test.SofiaPublicKey,
+			ed25519test.SofiaPrivateKey,
+			[]byte("Hi Sofia, this is a little bit of a longer message to make sure there are no problems"),
+			nil,
+		},
+		{
+			"to-charlotte-short-text",
+			ed25519test.CharlottePublicKey,
+			ed25519test.CharlottePrivateKey,
+			[]byte("Hi Charlotte"),
+			nil,
+		},
+		{
+			"to-charlotte-medium-text",
+			ed25519test.CharlottePublicKey,
+			ed25519test.CharlottePrivateKey,
+			[]byte("Hi Charlotte, this is a little bit of a longer message to make sure there are no problems"),
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			encrypted := NewEncrypter(tc.recipientPublicKey)
+			assert.Equal(tc.err, encrypted.err)
+			assert.NotNil(encrypted.err)
 		})
 	}
 }

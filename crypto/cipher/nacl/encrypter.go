@@ -11,13 +11,18 @@ import (
 )
 
 // NewEncrypter create a new encrypter with crypto rand for reader
-func NewEncrypter() Encrypter {
-	return Encrypter{rand: rand.Reader}
+func NewEncrypter(recipientPublicKey crypto.PublicKey) Encrypter {
+
+	if err := validatePublicKeyType(recipientPublicKey); err != nil {
+		return Encrypter{rand: nil, err: err}
+	}
+	return Encrypter{rand: rand.Reader, err: nil}
 }
 
 // Encrypter will encrypt data using AES256CBC method
 type Encrypter struct {
 	rand io.Reader
+	err  error
 }
 
 // Encrypt contents with the recipients public key.
